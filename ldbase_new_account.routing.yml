@@ -1,0 +1,8 @@
+# Route for step 3 of the new account creation process
+ldbase_new_account.step_three:
+  path: '/forms/account-creation-step-3'
+  defaults:
+    _controller: '\Drupal\ldbase_new_account\Controller\NewAccountController::stepThree'
+    _title: 'Account Creation Step 3'
+  requirements:
+    _permission: 'access content'
