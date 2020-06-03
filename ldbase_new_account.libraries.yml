@@ -1,0 +1,6 @@
+ldbase_new_account:
+  version: 1.x
+  js:
+    js/ldbase_new_account.js: {}
+  dependencies:
+    - core/jquery
