@@ -40,7 +40,7 @@ class NewAccountStepThreeWebformHandler extends WebformHandlerBase {
     // Create Drupal User
     $user = User::create();
 
-    //Mandatory settings (TODO: HASH PASSWORD??)
+    //Mandatory settings
     $user->setPassword($submission_array['ldbase_password']);
     $user->enforceIsNew();
     $user->setEmail($submission_array['primary_email']);
@@ -49,6 +49,7 @@ class NewAccountStepThreeWebformHandler extends WebformHandlerBase {
     
     // Save the user
     $user->save();
+    user_login_finalize($user);
     
     // Create the person
     $person_title = $submission_array['preferred_display_name'];
