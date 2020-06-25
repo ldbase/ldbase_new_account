@@ -37,23 +37,35 @@ class NewAccountStepOneWebformHandler extends WebformHandlerBase {
     // Use the submitted values to find existing records
     $possible_match_item_ids = $this->personSearch($submission_array);
   
-// Store the data in session temporary storage
+    // Set next step
+    if(count($possible_match_item_ids)) {
+      $form_state->set('next_step', 2);
+      $form_state->set('redirect_message', 'Found ' . count($possible_match_item_ids) . ' records with the information provided.');
+    } else {
+      $form_state->set('next_step', 3);
+      $form_state->set('redirect_message', 'No records were found with the information provided.');
+    }
+    
+    // Store the data in session temporary storage
     $tempstore = \Drupal::service('tempstore.private')->get('ldbase_new_account');
     $tempstore->set('step_one_submission_data', $submission_array);
-    
-    // Set the message to display in the next page
-    $form_state->set('redirect_message', 'Found ' . count($possible_match_item_ids) . ' records with the information provided.');
+    $tempstore->set('possible_match_item_ids', $possible_match_item_ids);
   }
 
   /**
    * {@inheritdoc}
    */
   public function confirmForm(array &$form, FormStateInterface $form_state, WebformSubmissionInterface $webform_submission) {
-    // redirect to step three
-    $route_name = 'ldbase_new_account.step_three';
+    $next_step = $form_state->get('next_step');
+    
+    if ($next_step == 2) {
+      $route_name = 'ldbase_new_account.step_two';
+    } else {
+      $route_name = 'ldbase_new_account.step_three'; 
+    }
+    
     $route_parameters = array();
     $this->messenger()->addStatus($this->t($form_state->get('redirect_message')));
-
     $form_state->setRedirect($route_name, $route_parameters);
   }
   

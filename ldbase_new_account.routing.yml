@@ -1,3 +1,12 @@
+# Route for step 2 of the new account creation process
+ldbase_new_account.step_two:
+  path: '/forms/account-creation-step-2'
+  defaults:
+    _form: 'Drupal\ldbase_new_account\Form\StepTwoForm'
+    _title: 'Account Creation Step 2'
+  requirements:
+    _permission: 'access content'
+    
 # Route for step 3 of the new account creation process
 ldbase_new_account.step_three:
   path: '/forms/account-creation-step-3'
