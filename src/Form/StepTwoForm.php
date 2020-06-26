@@ -4,6 +4,7 @@ namespace Drupal\ldbase_new_account\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\node\Entity\Node;
 
 class StepTwoForm extends FormBase {
   /**
@@ -32,7 +33,7 @@ class StepTwoForm extends FormBase {
    * @return array
    *   The form structure.
    */
-  public function buildForm(array $form, FormStateInterface $form_state) {
+  public function buildForm(array $form, FormStateInterface $form_state) { 
       
     // Retrieve the data from step one from session temporary storage
     $tempstore = \Drupal::service('tempstore.private')->get('ldbase_new_account');
@@ -44,13 +45,41 @@ class StepTwoForm extends FormBase {
     ];
     
     $count = 0;
+    $helper_service = \Drupal::service('ldbase_new_account_service.helper');
     
     foreach($possible_match_item_ids as $possible_match) {
-      $form['match_' . $count] = array(
+      $person_node = $helper_service->nodeFromItemId($possible_match);
+      $person_index = 'match_' . $count;
+      $form[$person_index] = array(
         '#type' => 'checkbox',
-        '#title' => $this->t($possible_match),
-        '#description' => $this->t($possible_match),
+        '#title' => $person_node->getTitle(),
       );
+      
+      $content = $helper_service->retrieveContentByPersonId($person_node->id());
+      $header = [
+        'type' => t('Content Type'),
+        'title' => t('Content Title')
+      ];
+      
+      $values = array();
+      
+      foreach ($content as $node_id) {
+        $node = Node::load($node_id);  
+        
+        $values[$node->id()] = [
+          'type' => $node->bundle(),
+          'title' => $node->getTitle(),
+        ];
+      }
+      
+      $person_content_index = 'person_content_match_' . $count;
+      
+      $form[$person_content_index] = [
+          '#type' => 'table',
+          '#header' => $header,
+          '#rows' => $values,
+          '#empty' => t('No data found.'),
+      ];
       
       $count++;
     }

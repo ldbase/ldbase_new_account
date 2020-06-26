@@ -1,0 +1,3 @@
+services:
+  ldbase_new_account_service.helper:
+    class: Drupal\ldbase_new_account\Service\LDbaseNewAccountService
