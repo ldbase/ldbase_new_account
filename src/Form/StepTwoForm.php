@@ -49,8 +49,7 @@ class StepTwoForm extends FormBase {
     
     foreach($possible_match_item_ids as $possible_match) {
       $person_node = $helper_service->nodeFromItemId($possible_match);
-      $person_index = 'match_' . $count;
-      $form[$person_index] = array(
+      $form['person-nid_' . $person_node->id()] = array(
         '#type' => 'checkbox',
         '#title' => $person_node->getTitle(),
       );
@@ -116,7 +115,30 @@ class StepTwoForm extends FormBase {
    *   The current state of the form.
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    // Redirect to home
-    $form_state->setRedirect('<front>');
+    // Store checked matches
+    $match_nids = array();
+    $values = $form_state->getValues();
+    
+    foreach($values as $key => $value){
+      if((substr($key, 0, 11) === 'person-nid_') && ($value == 1)) {
+        $match_data = explode('_', $key);
+        $match_nids[] = $match_data[1];
+      }
+    }
+    
+    // Store the data in session temporary storage
+    $tempstore = \Drupal::service('tempstore.private')->get('ldbase_new_account');
+    $tempstore->set('match_nids', $match_nids);
+    
+    if (count($match_nids) > 0) {
+      $redirect_message = "The owners of the records you identified have been notified for approval.";  
+    } else {
+      $redirect_message = "No existing records were found.";
+    }
+    
+    // Redirect to third step
+    $route_parameters = array();
+    $this->messenger()->addStatus($this->t($redirect_message));
+    $form_state->setRedirect('ldbase_new_account.step_three', $route_parameters);
   } 
 }

@@ -34,6 +34,10 @@ class NewAccountStepThreeWebformHandler extends WebformHandlerBase {
     */
   public function submitForm(array &$form, FormStateInterface $form_state, WebformSubmissionInterface $webform_submission) {
 
+    // Retrieve the data from step two from session temporary storage
+    $tempstore = \Drupal::service('tempstore.private')->get('ldbase_new_account');
+    $match_nids = $tempstore->get('match_nids');
+      
     // Get the submitted form values
     $submission_array = $webform_submission->getData();
     

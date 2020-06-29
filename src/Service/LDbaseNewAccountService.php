@@ -29,9 +29,19 @@ class LDbaseNewAccountService {
     $primary_first_name = $submission_array['ldbase_primary_name'][0]['primary_first_name'];
     $primary_middle_name = $submission_array['ldbase_primary_name'][0]['primary_middle_name'];
     $primary_last_name = $submission_array['ldbase_primary_name'][0]['primary_last_name'];
-  
+    
     $possible_matches = $this->nameSearch($primary_first_name, $primary_middle_name, $primary_last_name);
-    return $possible_matches;
+    
+    $additional_names = $submission_array['ldbase_additional_names'];
+    
+    foreach($additional_names as $additional_name) {
+      $local_matches = $this->nameSearch($additional_name['additional_first_name'], 
+        $additional_name['additional_middle_name'], $additional_name['additional_last_name']);
+      
+      $possible_matches = array_merge($possible_matches, $local_matches);
+    }
+    
+    return array_unique($possible_matches);
   }
   
   private function nameSearch($first_name, $middle_name, $last_name) {
