@@ -131,9 +131,9 @@ class StepTwoForm extends FormBase {
     $tempstore->set('match_nids', $match_nids);
     
     if (count($match_nids) > 0) {
-      $redirect_message = "The owners of the records you identified have been notified for approval.";  
+      $redirect_message = "The owners of the records you identified will be notified for approval.";  
     } else {
-      $redirect_message = "No existing records were found.";
+      $redirect_message = "No records were selected. Continuing account creation.";
     }
     
     // Redirect to third step

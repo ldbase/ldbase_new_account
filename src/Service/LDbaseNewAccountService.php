@@ -10,13 +10,35 @@ use Drupal\node\Entity\Node;
 
 class LDbaseNewAccountService {
   
+  public function storeExistingRecordsRequest($match_nids, $person_id) {
+    
+  }  
+    
   public function retrieveContentByPersonId($person_id) {
-    $query = \Drupal::entityQuery('node')
+    $dataset_query = \Drupal::entityQuery('node')
       ->condition('type', 'dataset')
       ->condition('field_related_persons', $person_id);
-   
-    $content = $query->execute();
-    return $content;    
+    $dataset_content = $dataset_query->execute();
+
+    $project_query = \Drupal::entityQuery('node')
+      ->condition('type', 'project')
+      ->condition('field_related_persons', $person_id);
+    $project_content = $project_query->execute();
+
+     $document_query = \Drupal::entityQuery('node')
+      ->condition('type', 'document')
+      ->condition('field_related_persons', $person_id);
+    $document_content = $document_query->execute();
+
+    $code_query = \Drupal::entityQuery('node')
+      ->condition('type', 'code')
+      ->condition('field_related_persons', $person_id);
+    $code_content = $code_query->execute();
+
+    $all_content = array_merge($dataset_content, $project_content,
+      $document_content, $code_content);
+
+    return $all_content;
   }  
     
   public function nodeFromItemId ($ItemId) {

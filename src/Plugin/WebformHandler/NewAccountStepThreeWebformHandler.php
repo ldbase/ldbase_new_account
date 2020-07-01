@@ -33,11 +33,6 @@ class NewAccountStepThreeWebformHandler extends WebformHandlerBase {
     * {@inheritdoc}
     */
   public function submitForm(array &$form, FormStateInterface $form_state, WebformSubmissionInterface $webform_submission) {
-
-    // Retrieve the data from step two from session temporary storage
-    $tempstore = \Drupal::service('tempstore.private')->get('ldbase_new_account');
-    $match_nids = $tempstore->get('match_nids');
-      
     // Get the submitted form values
     $submission_array = $webform_submission->getData();
     
@@ -62,7 +57,7 @@ class NewAccountStepThreeWebformHandler extends WebformHandlerBase {
     $person_last_name = $submission_array['ldbase_primary_name'][0]['primary_last_name'];
     $person_email = $submission_array['primary_email'];
     
-    $node = Node::create([
+    $person_node = Node::create([
       'type' => 'person',
       'status' => TRUE, // published
       'title' => 'test',
@@ -75,7 +70,17 @@ class NewAccountStepThreeWebformHandler extends WebformHandlerBase {
     ]);
     
     // Save the person
-    $node->save();
+    $person_node->save();
+
+    // Retrieve the data from step two from session temporary storage
+    $tempstore = \Drupal::service('tempstore.private')->get('ldbase_new_account');
+    $match_nids = $tempstore->get('match_nids');
+
+    // Pass the node IDs to the helper service that stores and messages users
+    if (count($match_nids) > 0) {
+      $helper_service = \Drupal::service('ldbase_new_account_service.helper');
+      $helper_service->storeExistingRecordsRequest($match_nids, $person_node->id());
+    }
     
     // Set the message to display in the next page
     $form_state->set('redirect_message', 'Your account has been successfully created.');
