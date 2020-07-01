@@ -36,6 +36,12 @@ class NewAccountStepThreeWebformHandler extends WebformHandlerBase {
     // Get the submitted form values
     $submission_array = $webform_submission->getData();
     
+    // Retrieve the data from step two from session temporary storage
+    // NOTE: You have to do this before login the newly created user below,
+    // as that function creates a new session for the logged in user
+    $tempstore = \Drupal::service('tempstore.private')->get('ldbase_new_account');
+    $match_nids = $tempstore->get('match_nids');
+    
     // Create Drupal User
     $user = User::create();
 
@@ -48,7 +54,6 @@ class NewAccountStepThreeWebformHandler extends WebformHandlerBase {
     
     // Save the user
     $user->save();
-    user_login_finalize($user);
     
     // Create the person
     $person_title = $submission_array['preferred_display_name'];
@@ -60,7 +65,6 @@ class NewAccountStepThreeWebformHandler extends WebformHandlerBase {
     $person_node = Node::create([
       'type' => 'person',
       'status' => TRUE, // published
-      'title' => 'test',
       'title' => $person_title,
       'field_first_name' => $person_first_name,
       'field_middle_name' => $person_middle_name,
@@ -72,15 +76,14 @@ class NewAccountStepThreeWebformHandler extends WebformHandlerBase {
     // Save the person
     $person_node->save();
 
-    // Retrieve the data from step two from session temporary storage
-    $tempstore = \Drupal::service('tempstore.private')->get('ldbase_new_account');
-    $match_nids = $tempstore->get('match_nids');
-
     // Pass the node IDs to the helper service that stores and messages users
     if (count($match_nids) > 0) {
       $helper_service = \Drupal::service('ldbase_new_account_service.helper');
       $helper_service->storeExistingRecordsRequest($match_nids, $person_node->id());
     }
+    
+    //log the user in
+    user_login_finalize($user);
     
     // Set the message to display in the next page
     $form_state->set('redirect_message', 'Your account has been successfully created.');

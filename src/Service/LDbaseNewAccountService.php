@@ -10,11 +10,36 @@ use Drupal\node\Entity\Node;
 
 class LDbaseNewAccountService {
   
-  public function storeExistingRecordsRequest($match_nids, $person_id) {
+  public function storeExistingRecordsRequest($match_nids, $new_person_id) { 
+      
+    foreach($match_nids as $existing_person_id) {
+      // Retrieve all the content linked to the existing person
+      $content = $this->retrieveContentByPersonId($existing_person_id);
+      
+      foreach ($content as $node_id) {
+        $request_id = time();  
+        $node = Node::load($node_id);
+        
+        //Create Existing Records Request Nodes
+        $existing_record_request = Node::create([
+          'type' => 'existing_record_request',
+          'field_request_status' => FALSE, // pending
+          'title' => $request_id,
+          'field_previous_person' => $existing_person_id,
+          'field_requesting_person' => $new_person_id,
+          'field_node_owner' => $node->getOwnerId(),
+        ]);
     
+        // Save the request
+        $existing_record_request->save();
+      }   
+    }
   }  
     
   public function retrieveContentByPersonId($person_id) {
+    
+    \Drupal::logger('ldbase_new_account')->notice('Ran with variable value: ' . $person_id);  
+      
     $dataset_query = \Drupal::entityQuery('node')
       ->condition('type', 'dataset')
       ->condition('field_related_persons', $person_id);

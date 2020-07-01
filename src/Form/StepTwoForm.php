@@ -55,6 +55,7 @@ class StepTwoForm extends FormBase {
       );
       
       $content = $helper_service->retrieveContentByPersonId($person_node->id());
+      
       $header = [
         'type' => t('Content Type'),
         'title' => t('Content Title')
