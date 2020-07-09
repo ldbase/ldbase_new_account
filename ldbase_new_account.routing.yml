@@ -15,3 +15,12 @@ ldbase_new_account.step_three:
     _title: 'Account Creation Step 3'
   requirements:
     _permission: 'access content'
+    
+# Route for the approval form for Existing Record Requests
+ldbase_new_account.existing_record_approval_form:
+  path: '/forms/existing-record-request-approval'
+  defaults:
+    _form: 'Drupal\ldbase_new_account\Form\ExistingRecordApprovalForm'
+    _title: 'Existing Record Request Approval Form'
+  requirements:
+    _permission: 'access content'
