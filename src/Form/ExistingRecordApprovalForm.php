@@ -133,11 +133,26 @@ class ExistingRecordApprovalForm extends FormBase {
       // Retrieve the id of the person to be linked
       $person_to_be_linked_field = $existing_record_request->field_requesting_person->getValue(); 
       $person_to_be_linked_id = $person_to_be_linked_field[0]['target_id'];
+
+      // Retrive the id of the person to be removed
+      $person_to_be_removed_field = $existing_record_request->field_previous_person->getValue();
+      $person_to_be_removed_id = $person_to_be_removed_field[0]['target_id'];
       
-      // Link the person to the node
+      // Remove the previous person from the node
       $node_to_be_linked = Node::load($node_to_be_linked_id);
+      $related_persons = $node_to_be_linked->field_related_persons->getValue();
+      foreach($related_persons as $key => $related_person) {
+        if($related_person['target_id'] == $person_to_be_removed_id){
+          $node_to_be_linked->field_related_persons->removeItem($key);
+        }
+      }
+
+      // Link the person to the node
       $node_to_be_linked->field_related_persons[] = ['target_id' => $person_to_be_linked_id];
+
+      // Save the node and delete the request
       $node_to_be_linked->save();
+      $existing_record_request->delete();
     }
       
     // Set the message to display in the next page
