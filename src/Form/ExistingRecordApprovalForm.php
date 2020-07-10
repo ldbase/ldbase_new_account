@@ -5,6 +5,8 @@ namespace Drupal\ldbase_new_account\Form;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\node\Entity\Node;
+use Drupal\Core\Link;
+use Drupal\Core\Url;
 
 class ExistingRecordApprovalForm extends FormBase {
   /**
@@ -48,6 +50,7 @@ class ExistingRecordApprovalForm extends FormBase {
     
     $header = [
       'requestor' => t('Requestor'),
+      'email' => t('Email'),
       'content_title' => t('Content Title')
     ];
 
@@ -55,12 +58,27 @@ class ExistingRecordApprovalForm extends FormBase {
       
     foreach ($existing_record_request_ids as $node_id) {
       $existing_record_request = Node::load($node_id);
-      $node_to_be_linked_id = $existing_record_request->field_requested_node_link->getValue(); 
-      $node_to_be_linked = Node::load($node_to_be_linked_id[0]['target_id']);
+      
+      // Create a link to the user requesting the new link
+      $person_to_be_linked_field = $existing_record_request->field_requesting_person->getValue(); 
+      $person_to_be_linked_id = $person_to_be_linked_field[0]['target_id'];
+      $person_to_be_linked = Node::load($person_to_be_linked_id);
+      $person_email_field = $person_to_be_linked->field_email->getValue();
+      $person_email = $person_email_field[0]['value'];
+      $person_link = Link::fromTextAndUrl($person_to_be_linked->getTitle(),
+        Url::fromRoute('entity.node.canonical', ['node' => $person_to_be_linked_id]));
+      
+      // Create a link to the content where collaborator is being added
+      $node_to_be_linked_field = $existing_record_request->field_requested_node_link->getValue(); 
+      $node_to_be_linked_id = $node_to_be_linked_field[0]['target_id'];
+      $node_to_be_linked = Node::load($node_to_be_linked_id);
+      $content_link = Link::fromTextAndUrl($node_to_be_linked->getTitle(),
+        Url::fromRoute('entity.node.canonical', ['node' => $node_to_be_linked_id]));
       
       $options[$existing_record_request->id()] = [
-        'requestor' => $existing_record_request->bundle(),
-        'content_title' => $node_to_be_linked->getTitle(),
+        'requestor' => $person_link,
+        'email' => $person_email,
+        'content_title' => $content_link,
       ];
     }
       
@@ -103,6 +121,37 @@ class ExistingRecordApprovalForm extends FormBase {
    *   The current state of the form.
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
+    // Retrieve the submitted values
+    $values = $form_state->getValues();
+    foreach($values['existing_record_requests_table'] as $existing_record_request_id) {
+      $existing_record_request = Node::load($existing_record_request_id);
+      
+      // Retrieve the content that needs to be updated
+      $node_to_be_linked_field = $existing_record_request->field_requested_node_link->getValue(); 
+      $node_to_be_linked_id = $node_to_be_linked_field[0]['target_id'];
+      
+      // Retrieve the id of the person to be linked
+      $person_to_be_linked_field = $existing_record_request->field_requesting_person->getValue(); 
+      $person_to_be_linked_id = $person_to_be_linked_field[0]['target_id'];
+      
+      // Link the person to the node
+      $node_to_be_linked = Node::load($node_to_be_linked_id);
+      $node_to_be_linked->field_related_persons[] = ['target_id' => $person_to_be_linked_id];
+      $node_to_be_linked->save();
+    }
+      
+    // Set the message to display in the next page
+    if (count($values['existing_record_requests_table']) > 0) {
+      $redirect_message = 'Approvals have been successfully processed.';
+    } else {
+      $redirect_message = 'No approvals were processed.'; 
+    }
+      
+    // redirect to user dashboard
+    $route_name = 'entity.user.canonical';
+    $route_parameters = ['user' => \Drupal::currentUser()->id()];
+    $this->messenger()->addStatus($this->t($redirect_message));
 
+    $form_state->setRedirect($route_name, $route_parameters);
   } 
 }
