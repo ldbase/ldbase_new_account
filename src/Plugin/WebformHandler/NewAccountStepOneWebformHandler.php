@@ -9,9 +9,12 @@ use Drupal\webform\WebformInterface;
 use Drupal\webform\Plugin\WebformHandlerBase;
 use Drupal\webform\WebformSubmissionInterface;
 use Drupal\webform\Entity\WebformSubmission;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Drupal\user\Entity\User;
+use Drupal\node\Entity\Node;
 
 /**
- * Handle the submission of the account creation webform (step one).
+ * Handle the submission of the account creation webform.
  *
  * @WebformHandler(
  *   id = "new_account_step_one_webform",
@@ -30,43 +33,87 @@ class NewAccountStepOneWebformHandler extends WebformHandlerBase {
     * {@inheritdoc}
     */
   public function submitForm(array &$form, FormStateInterface $form_state, WebformSubmissionInterface $webform_submission) {
-      
+          
     // Get the submitted form values
     $submission_array = $webform_submission->getData();
+    $email_address = $submission_array['primary_email'];
+      
+    // Check to see if the email address has already been used
+    $ids = \Drupal::entityQuery('user')
+           ->condition('name', $email_address)
+           ->range(0, 1)
+           ->execute();
     
-    // Use the submitted values to find existing records
-    $helper_service = \Drupal::service('ldbase_new_account_service.helper');
-    $possible_match_item_ids = $helper_service->personSearch($submission_array);
-  
-    // Set next step
-    if(count($possible_match_item_ids)) {
-      $form_state->set('next_step', 2);
-      $form_state->set('redirect_message', 'Found ' . count($possible_match_item_ids) . ' records with the information provided.');
-    } else {
-      $form_state->set('next_step', 3);
-      $form_state->set('redirect_message', 'No records were found with the information provided.');
+    // If the email address has already been used, send them to password reset screen
+    if(!empty($ids)){
+      $form_state->set('redirect', 'user.page');
+      $form_state->set('redirect_message', 'The email address you entered already exists.');
+      $form_state->set('user_redirect', '');
     }
+    else {// If it hasn't been used, create the account
     
-    // Store the data in session temporary storage
-    $tempstore = \Drupal::service('tempstore.private')->get('ldbase_new_account');
-    $tempstore->set('step_one_submission_data', $submission_array);
-    $tempstore->set('possible_match_item_ids', $possible_match_item_ids);
-  }
+      // Create Drupal User
+      $user = User::create();
+      
+      //Mandatory settings
+      $user->setPassword($submission_array['ldbase_password']);
+      $user->enforceIsNew();
+      $user->setEmail($submission_array['primary_email']);
+      $user->setUsername($submission_array['primary_email']);
+      $user->activate();
 
+      // Save the user
+      $user->save();
+    
+      // Create the person
+      $person_title = $submission_array['preferred_display_name'];
+      $person_first_name = $submission_array['ldbase_primary_name'][0]['primary_first_name'];
+      $person_middle_name = $submission_array['ldbase_primary_name'][0]['primary_middle_name'];
+      $person_last_name = $submission_array['ldbase_primary_name'][0]['primary_last_name'];
+      $person_email = $submission_array['primary_email'];
+      $additional_names = $submission_array['ldbase_additional_names'];
+      
+      $person_node = Node::create([
+        'type' => 'person',
+        'status' => TRUE, // published
+        'title' => $person_title,
+        'field_first_name' => $person_first_name,
+        'field_middle_name' => $person_middle_name,
+        'field_last_name' => $person_last_name,
+        'field_email' => $person_email,
+        'field_drupal_account_id' => $user->id(),
+        'uid' => $user->id(), // set author to be this user
+      ]);
+    
+      foreach($additional_names as $additional_name) {
+        $name_to_add = $additional_name['additional_first_name'] . ' ' . $additional_name['additional_middle_name']
+                . ' ' . $additional_name['additional_last_name'];
+        $person_node->field_publishing_names->appendItem($name_to_add);
+      }
+      
+      // Save the person
+      $person_node->save();
+
+      //log the user in
+      user_login_finalize($user);
+      
+      // Set the message and route for next page
+      $form_state->set('redirect_message', 'Your account has been successfully created.');  
+      $form_state->set('redirect', 'entity.user.canonical');
+      $form_state->set('user_redirect', $user->id());
+    }
+  }
+  
   /**
    * {@inheritdoc}
    */
   public function confirmForm(array &$form, FormStateInterface $form_state, WebformSubmissionInterface $webform_submission) {
-    $next_step = $form_state->get('next_step');
-    
-    if ($next_step == 2) {
-      $route_name = 'ldbase_new_account.step_two';
-    } else {
-      $route_name = 'ldbase_new_account.step_three'; 
-    }
-    
-    $route_parameters = array();
+    // Set message for next screen
     $this->messenger()->addStatus($this->t($form_state->get('redirect_message')));
+
+    // redirect based on submit data
+    $route_parameters = ['user' => $form_state->get('user_redirect')];
+    $route_name = $form_state->get('redirect');
     $form_state->setRedirect($route_name, $route_parameters);
-  }  
+  }
 }
