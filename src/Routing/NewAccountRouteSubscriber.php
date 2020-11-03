@@ -14,9 +14,9 @@ class NewAccountRouteSubscriber extends RouteSubscriberBase {
    * {@inheritdoc}
    */
   protected function alterRoutes(RouteCollection $collection) {
-    //change path /user/register to /form/account-creation-step-1
+    //change path /user/register to /create-new-account
     if ($route = $collection->get('user.register')) {
-      $route->setPath('/form/account-creation-step-1');
+      $route->setPath('/create-new-account');
     }
   }
 }
