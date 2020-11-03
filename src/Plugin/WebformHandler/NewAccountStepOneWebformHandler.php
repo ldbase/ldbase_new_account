@@ -48,6 +48,7 @@ class NewAccountStepOneWebformHandler extends WebformHandlerBase {
     if(!empty($ids)){
       $form_state->set('redirect', 'user.page');
       $form_state->set('redirect_message', 'The email address you entered already exists.');
+      $form_state->set('message_type', 'error');
       $form_state->set('user_redirect', '');
     }
     else {// If it hasn't been used, create the account
@@ -98,7 +99,8 @@ class NewAccountStepOneWebformHandler extends WebformHandlerBase {
       user_login_finalize($user);
       
       // Set the message and route for next page
-      $form_state->set('redirect_message', 'Your account has been successfully created.');  
+      $form_state->set('redirect_message', 'Your account has been successfully created.');
+      $form_state->set('message_type', 'normal');
       $form_state->set('redirect', 'entity.user.canonical');
       $form_state->set('user_redirect', $user->id());
     }
@@ -109,8 +111,12 @@ class NewAccountStepOneWebformHandler extends WebformHandlerBase {
    */
   public function confirmForm(array &$form, FormStateInterface $form_state, WebformSubmissionInterface $webform_submission) {
     // Set message for next screen
-    $this->messenger()->addStatus($this->t($form_state->get('redirect_message')));
-
+    if($form_state->get('message_type') == 'normal') {
+      $this->messenger()->addStatus($this->t($form_state->get('redirect_message')));
+    } else {
+      $this->messenger()->addError($this->t($form_state->get('redirect_message')));
+    }
+    
     // redirect based on submit data
     $route_parameters = ['user' => $form_state->get('user_redirect')];
     $route_name = $form_state->get('redirect');
