@@ -1,0 +1,9 @@
+id: reject_existing_record_request
+label: 'Reject Existing Record Request'
+status: true
+langcode: en
+type: node
+plugin: reject_existing_record_request
+dependencies:
+  module:
+    - node

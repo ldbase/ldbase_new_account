@@ -1,0 +1,6 @@
+services:
+  ldbase_new_account.commands:
+    class: \Drupal\ldbase_new_account\Commands\LDbaseNewAccountCommands
+    tags:
+      - { name: drush.command }
+    arguments: ['@entity_type.manager', '@logger.factory', '@ldbase_new_account_service.helper']

@@ -2,7 +2,10 @@
   "name": "ldbase/ldbase_new_account",
   "description": "Webform handlers and other logic that helps create a new ldbase user account",
   "type": "drupal-custom-module",
-  "keywords": ["Drupal", "LDbase"],
+  "keywords": [
+    "Drupal",
+    "LDbase"
+  ],
   "homepage": "https://github.com/ldbase/ldbase_new_account",
   "license": "GPL-2.0+",
   "authors": [
@@ -21,5 +24,12 @@
       "email": "fcalvo@fsu.edu",
       "role": "Maintainer"
     }
-  ]
+  ],
+  "extra": {
+    "drush": {
+      "services": {
+        "drush.services.yml": "^9"
+      }
+    }
+  }
 }

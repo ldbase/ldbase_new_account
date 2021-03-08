@@ -1,12 +1,12 @@
 # Route for step 2 of the new account creation process
 ldbase_new_account.step_two:
-  path: '/forms/account-creation-step-2'
+  path: '/forms/possible-account-matches'
   defaults:
-    _form: 'Drupal\ldbase_new_account\Form\StepTwoForm'
-    _title: 'Account Creation Step 2'
+    _form: 'Drupal\ldbase_new_account\Form\PossibleAccountMatches'
+    _title: 'Possible Account Matches'
   requirements:
     _permission: 'access content'
-    
+
 # Route for step 3 of the new account creation process
 ldbase_new_account.step_three:
   path: '/forms/account-creation-step-3'
@@ -15,7 +15,7 @@ ldbase_new_account.step_three:
     _title: 'Account Creation Step 3'
   requirements:
     _permission: 'access content'
-    
+
 # Route for the approval form for Existing Record Requests
 ldbase_new_account.existing_record_approval_form:
   path: '/forms/existing-record-request-approval'
