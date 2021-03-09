@@ -1,0 +1,9 @@
+id: reject_possible_account_match
+label: 'LDbase - Reject Possible Account Match'
+status: true
+langcode: en
+type: node
+plugin: reject_possible_account_match
+dependencies:
+  module:
+    - node

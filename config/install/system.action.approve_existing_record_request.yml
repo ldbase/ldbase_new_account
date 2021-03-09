@@ -1,5 +1,5 @@
 id: approve_existing_record_request
-label: 'Approve Existing Record Request'
+label: 'LDbase - Approve Existing Record Request'
 status: true
 langcode: en
 type: node

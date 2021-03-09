@@ -22,6 +22,7 @@ class BatchService {
    */
   public function collectMatches($id, $nid, $operation_details, &$context) {
     $node_storage = \Drupal::entityTypeManager()->getStorage('node');
+    $helper_service = \Drupal::service('ldbase_new_account_service.helper');
 
     // search for match
     // name on non-user Person node
@@ -52,24 +53,33 @@ class BatchService {
           // make sure this person has a user attached
           $user_id = $node_storage->load($item_id)->get('field_drupal_account_id')->target_id;
           if (!empty($user_id)) {
-            // check that we haven't stored this possibility already
-            $existing_match = $node_storage->getQuery()
-              ->condition('type','possible_user_match')
-              ->condition('field_possible_match_person_id', $nid)
-              ->condition('field_real_person_id', $item_id)
-              ->execute();
-            if (empty($existing_match)) {
-              // add possible match node
-              $new_match = $node_storage->create([
-                'type' => 'possible_user_match',
-                'status' => 1,
-                'title' => $person->getTitle() . ' possible match',
-                'field_possible_match_person_id' => $nid,
-                'field_real_person_id' => $item_id,
-              ]);
-              $new_match->save();
-              // message user of possible match
+            // get referenced content
+            $content = $helper_service->retrieveContentByPersonId($nid);
+            if (!empty($content)) {
+              // check that we haven't stored this possibility already
+              foreach ($content as $content_id) {
+                $existing_match = $node_storage->getQuery()
+                ->condition('type','possible_user_match')
+                ->condition('field_possible_match_person_id', $nid)
+                ->condition('field_real_person_id', $item_id)
+                ->condition('field_content_id', $content_id)
+                ->execute();
+                if (empty($existing_match)) {
+                  // add possible match node
+                  $new_match = $node_storage->create([
+                    'type' => 'possible_user_match',
+                    'status' => 1,
+                    'title' => $person->getTitle() . ' possible match',
+                    'field_possible_match_person_id' => $nid,
+                    'field_real_person_id' => $item_id,
+                    'field_content_id' => $content_id,
+                  ]);
+                  $new_match->save();
+                }
 
+              // message user of possible match $user_id
+              \Drupal::service('ldbase_handlers.message_service')->possibleMatchesNotification($user_id);
+              }
             }
           }
         }

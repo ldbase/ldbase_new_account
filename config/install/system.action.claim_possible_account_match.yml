@@ -1,0 +1,9 @@
+id: claim_possible_account_match
+label: 'LDbase - Claim Possible Account Match'
+status: true
+langcode: en
+type: node
+plugin: claim_possible_account_match
+dependencies:
+  module:
+    - node

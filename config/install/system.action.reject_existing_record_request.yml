@@ -1,5 +1,5 @@
 id: reject_existing_record_request
-label: 'Reject Existing Record Request'
+label: 'LDbase - Reject Existing Record Request'
 status: true
 langcode: en
 type: node

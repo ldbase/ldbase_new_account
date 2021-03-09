@@ -6,22 +6,23 @@ use Drupal\Core\Action\ActionBase;
 use Drupal\Core\Session\AccountInterface;
 
 /**
- * Reject an Existing Record Request.
+ * Reject a Possible Account Match.
  *
  * @Action(
- *   id = "reject_existing_record_request",
- *   label = @Translation("LDbase - Reject Existing Record Request"),
+ *   id = "reject_possible_account_match",
+ *   label = @Translation("LDbase - Reject a Possible Account Match"),
  *   type = "node"
  * )
  */
-class RejectExistingRecordRequest extends ActionBase {
+class RejectPossibleAccountMatch extends ActionBase {
 
   /**
    * {@inheritdoc}
    */
-  public function execute($request = NULL) {
-    $request->set('field_request_status','Rejected');
-    $request->save();
+  public function execute($match = NULL) {
+    // set match status
+    $match->set('field_user_match_status','rejected');
+    $match->save();
   }
 
   /**
