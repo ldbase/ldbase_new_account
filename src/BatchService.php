@@ -75,10 +75,10 @@ class BatchService {
                     'field_content_id' => $content_id,
                   ]);
                   $new_match->save();
-                }
 
-              // message user of possible match $user_id
-              \Drupal::service('ldbase_handlers.message_service')->possibleMatchesNotification($user_id);
+                  // message user of possible match $user_id
+                  \Drupal::service('ldbase_handlers.message_service')->possibleMatchesNotification($user_id);
+                }
               }
             }
           }
