@@ -33,17 +33,17 @@ class NewAccountStepOneWebformHandler extends WebformHandlerBase {
     * {@inheritdoc}
     */
   public function submitForm(array &$form, FormStateInterface $form_state, WebformSubmissionInterface $webform_submission) {
-          
+
     // Get the submitted form values
     $submission_array = $webform_submission->getData();
     $email_address = $submission_array['primary_email'];
-      
+
     // Check to see if the email address has already been used
     $ids = \Drupal::entityQuery('user')
            ->condition('name', $email_address)
            ->range(0, 1)
            ->execute();
-    
+
     // If the email address has already been used, send them to password reset screen
     if(!empty($ids)){
       $form_state->set('redirect', 'user.page');
@@ -52,10 +52,10 @@ class NewAccountStepOneWebformHandler extends WebformHandlerBase {
       $form_state->set('user_redirect', '');
     }
     else {// If it hasn't been used, create the account
-    
+
       // Create Drupal User
       $user = User::create();
-      
+
       //Mandatory settings
       $user->setPassword($submission_array['ldbase_password']);
       $user->enforceIsNew();
@@ -65,7 +65,7 @@ class NewAccountStepOneWebformHandler extends WebformHandlerBase {
 
       // Save the user
       $user->save();
-    
+
       // Create the person
       $person_title = $submission_array['preferred_display_name'];
       $person_first_name = $submission_array['ldbase_primary_name'][0]['primary_first_name'];
@@ -73,7 +73,9 @@ class NewAccountStepOneWebformHandler extends WebformHandlerBase {
       $person_last_name = $submission_array['ldbase_primary_name'][0]['primary_last_name'];
       $person_email = $submission_array['primary_email'];
       $additional_names = $submission_array['ldbase_additional_names'];
-      
+
+      $field_accepted_terms_of_use = date('Y-m-d\TH:i:s', time());
+
       $person_node = Node::create([
         'type' => 'person',
         'status' => TRUE, // published
@@ -83,21 +85,22 @@ class NewAccountStepOneWebformHandler extends WebformHandlerBase {
         'field_last_name' => $person_last_name,
         'field_email' => $person_email,
         'field_drupal_account_id' => $user->id(),
+        'field_accepted_terms_of_use' => $field_accepted_terms_of_use,
         'uid' => $user->id(), // set author to be this user
       ]);
-    
+
       foreach($additional_names as $additional_name) {
         $name_to_add = $additional_name['additional_first_name'] . ' ' . $additional_name['additional_middle_name']
                 . ' ' . $additional_name['additional_last_name'];
         $person_node->field_publishing_names->appendItem($name_to_add);
       }
-      
+
       // Save the person
       $person_node->save();
 
       //log the user in
       user_login_finalize($user);
-      
+
       // Set the message and route for next page
       $form_state->set('redirect_message', 'Your account has been successfully created.');
       $form_state->set('message_type', 'normal');
@@ -105,7 +108,7 @@ class NewAccountStepOneWebformHandler extends WebformHandlerBase {
       $form_state->set('user_redirect', $user->id());
     }
   }
-  
+
   /**
    * {@inheritdoc}
    */
@@ -116,7 +119,7 @@ class NewAccountStepOneWebformHandler extends WebformHandlerBase {
     } else {
       $this->messenger()->addError($this->t($form_state->get('redirect_message')));
     }
-    
+
     // redirect based on submit data
     $route_parameters = ['user' => $form_state->get('user_redirect')];
     $route_name = $form_state->get('redirect');
