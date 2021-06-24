@@ -49,6 +49,9 @@ class ClaimPossibleAccountMatch extends ActionBase {
     // notify Project Administrators of requests
     // pass new request id
     \Drupal::service('ldbase_handlers.message_service')->existingRecordRequestMade($new_request_id);
+
+    $redirect_message = "The Project Administrators of the records you identified will be notified for approval. If they approve your request, your account will be connectd to the records.";
+    $this->messenger()->addStatus($this->t($redirect_message));
   }
 
   /**

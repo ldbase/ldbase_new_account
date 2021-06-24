@@ -149,10 +149,6 @@ class PossibleAccountMatches extends FormBase {
         $new_existing_record_request->save();
         $new_request_id = $new_existing_record_request->id();
 
-        // notify Project Administrators of requests
-        // pass new request id
-        //\Drupal::service('ldbase_handlers.message_service')->existingRecordRequestMade($new_request_id);
-
         $redirect_message = "The Project Administrators of the records you identified will be notified for approval.";
       }
       else {

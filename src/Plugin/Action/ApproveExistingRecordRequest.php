@@ -52,6 +52,9 @@ class ApproveExistingRecordRequest extends ActionBase {
 
     $request->set('field_request_status','Approved');
     $request->save();
+
+    $redirect_message = 'Approvals have been successfully processed.  Those records have been connected to the requesting user accounts.';
+    $this->messenger()->addStatus($this->t($redirect_message));
   }
 
   /**
