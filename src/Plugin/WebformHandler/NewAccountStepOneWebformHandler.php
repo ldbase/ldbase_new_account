@@ -82,6 +82,9 @@ class NewAccountStepOneWebformHandler extends WebformHandlerBase {
     // Save the person
     $person_node->save();
 
+    // send email verification
+    _user_mail_notify('register_no_approval_required', $user);
+
     //log the user in
     user_login_finalize($user);
 
