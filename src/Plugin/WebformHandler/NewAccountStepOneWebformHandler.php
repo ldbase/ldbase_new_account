@@ -89,7 +89,7 @@ class NewAccountStepOneWebformHandler extends WebformHandlerBase {
     user_login_finalize($user);
 
     // Set the message and route for next page
-    $form_state->set('redirect_message', 'Your account has been successfully created.');
+    $form_state->set('redirect_message', 'Your account has been successfully created.<br/>Check your email for a verification message.');
     $form_state->set('message_type', 'normal');
     $form_state->set('redirect', 'entity.user.canonical');
     $form_state->set('user_redirect', $user->id());
