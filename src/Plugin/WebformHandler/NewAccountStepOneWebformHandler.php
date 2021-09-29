@@ -45,6 +45,7 @@ class NewAccountStepOneWebformHandler extends WebformHandlerBase {
     $user->enforceIsNew();
     $user->setEmail($submission_array['primary_email']);
     $user->setUsername($submission_array['primary_email']);
+    $user->set('mass_contact_opt_out', !($submission_array['mass_contact_opt_in']));
     $user->activate();
 
     // Save the user
@@ -56,6 +57,7 @@ class NewAccountStepOneWebformHandler extends WebformHandlerBase {
     $person_middle_name = $submission_array['ldbase_primary_name'][0]['primary_middle_name'];
     $person_last_name = $submission_array['ldbase_primary_name'][0]['primary_last_name'];
     $person_email = $submission_array['primary_email'];
+    $field_do_not_contact = !($submission_array['person_contact_opt_in']);
     $additional_names = $submission_array['ldbase_additional_names'];
 
     $field_accepted_terms_of_use = date('Y-m-d\TH:i:s', time());
@@ -68,6 +70,7 @@ class NewAccountStepOneWebformHandler extends WebformHandlerBase {
       'field_middle_name' => $person_middle_name,
       'field_last_name' => $person_last_name,
       'field_email' => $person_email,
+      'field_do_not_contact' => $field_do_not_contact,
       'field_drupal_account_id' => $user->id(),
       'field_accepted_terms_of_use' => $field_accepted_terms_of_use,
       'uid' => $user->id(), // set author to be this user
