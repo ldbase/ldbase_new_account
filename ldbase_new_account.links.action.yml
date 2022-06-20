@@ -1,6 +1,0 @@
-ldbase_new_account.review_existing_records:
-  route_name: 'view.existing_records_requests.page_1'
-  class: '\Drupal\group\Plugin\Menu\LocalAction\WithDestination'
-  title: 'View Existing Record requests'
-  appears_on:
-    - 'view.group_members.ldbase_project'
