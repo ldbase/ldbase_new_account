@@ -42,6 +42,7 @@ class ApproveExistingRecordRequest extends ActionBase {
 
     //check if $replace_this_person is still referenced
     $replaced_person_query = $node_storage->getQuery()
+      ->accessCheck(TRUE)
       ->condition('field_related_persons', $replace_this_person)
       ->execute();
     // if not delete $replace_this_person

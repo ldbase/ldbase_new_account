@@ -38,11 +38,13 @@ class PossibleAccountMatches extends FormBase {
     $current_user_id = \Drupal::currentUser()->id();
     // get the person node attached to this user
     $real_person_id = $node_storage->getQuery()
+      ->accessCheck(TRUE)
       ->condition('type','person')
       ->condition('field_drupal_account_id', $current_user_id)
       ->execute();
     // Retrieve the possible user match nids for this person
     $possible_user_matches = $node_storage->getQuery()
+      ->accessCheck(TRUE)
       ->condition('type','possible_user_match')
       ->condition('field_real_person_id', key($real_person_id))
       ->execute();

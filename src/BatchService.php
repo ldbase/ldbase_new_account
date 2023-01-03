@@ -59,6 +59,7 @@ class BatchService {
               // check that we haven't stored this possibility already
               foreach ($content as $content_id) {
                 $existing_match = $node_storage->getQuery()
+                ->accessCheck(TRUE)
                 ->condition('type','possible_user_match')
                 ->condition('field_possible_match_person_id', $nid)
                 ->condition('field_real_person_id', $item_id)

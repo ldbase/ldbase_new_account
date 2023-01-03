@@ -108,6 +108,7 @@ class NewAccountStepOneWebformHandler extends WebformHandlerBase {
 
     // Check to see if the email address has already been used
     $ids = \Drupal::entityQuery('user')
+           ->accessCheck(TRUE)
            ->condition('name', $email_address)
            ->range(0, 1)
            ->execute();

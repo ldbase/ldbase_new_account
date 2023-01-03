@@ -57,6 +57,7 @@ class LDbaseNewAccountCommands extends DrushCommands {
     // get person nodes that are not connected to a drupal user
     $node_storage = $this->entityTypeManager->getStorage('node');
     $unconnected_person_ids = $node_storage->getQuery()
+      ->accessCheck(TRUE)
       ->condition('type','person')
       ->notExists('field_drupal_account_id')
       ->execute();

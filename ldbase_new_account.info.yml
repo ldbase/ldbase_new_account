@@ -2,5 +2,4 @@ name: LDbase New Account
 description: Webform handlers and other logic that helps create a new ldbase user account
 package: LDbase
 type: module
-core: 8.x
-core_version_requirement: ^8 || ^9
+core_version_requirement: ^9 || ^10
