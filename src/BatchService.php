@@ -20,7 +20,7 @@ class BatchService {
    * @param object $context
    *  Context for operations.
    */
-  public function collectMatches($id, $nid, $operation_details, &$context) {
+  public static function collectMatches($id, $nid, $operation_details, &$context) {
     $node_storage = \Drupal::entityTypeManager()->getStorage('node');
     $helper_service = \Drupal::service('ldbase_new_account_service.helper');
 
