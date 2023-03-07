@@ -51,7 +51,8 @@ class BatchService {
         // make sure this result is not just the original node used to search
         if ($item_id != $nid) {
           // make sure this person has a user attached
-          $user_id = $node_storage->load($item_id)->get('field_drupal_account_id')->target_id;
+          $check_user = $node_storage->load($item_id);
+          $user_id = $check_user->hasField('field_drupal_account_id') ? $check_user->get('field_drupal_account_id')->target_id : null;
           if (!empty($user_id)) {
             // get referenced content
             $content = $helper_service->retrieveContentByPersonId($nid);
