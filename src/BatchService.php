@@ -81,6 +81,24 @@ class BatchService {
                   // message user of possible match $user_id
                   \Drupal::service('ldbase_handlers.message_service')->possibleMatchesNotification($user_id);
                 }
+                // check if the existing match is more than $update_horizon old
+                else {
+                  $update_horizon = strtotime('-14 days');  // two weeks ago
+                  foreach ($existing_match as $match_id) {
+                    $match_node = $node_storage->load($match_id);
+                    $match_node_updated = $match_node->changed->value;
+                    $match_node_status = $match_node->get('status')->value;
+
+                    if ($match_node_status == 1 && $update_horizon >= $match_node_updated) {
+                      $match_node->setChangedTime(\Drupal::time()->getRequestTime());
+                      $match_node->save();
+
+                      // message user of possible match $user_id
+                      \Drupal::service('ldbase_handlers.message_service')
+                        ->possibleMatchesNotification($user_id);
+                    }
+                  }
+                }
               }
             }
           }

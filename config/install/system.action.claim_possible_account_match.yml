@@ -1,5 +1,5 @@
 id: claim_possible_account_match
-label: 'LDbase - Claim Possible Account Match'
+label: 'LDbase - Accept. Yes, I contributed to this content'
 status: true
 langcode: en
 type: node

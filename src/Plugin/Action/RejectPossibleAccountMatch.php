@@ -10,7 +10,7 @@ use Drupal\Core\Session\AccountInterface;
  *
  * @Action(
  *   id = "reject_possible_account_match",
- *   label = @Translation("LDbase - Reject a Possible Account Match"),
+ *   label = @Translation("LDbase - Reject. I did not contribute to this project"),
  *   type = "node"
  * )
  */

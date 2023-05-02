@@ -1,5 +1,5 @@
 id: reject_possible_account_match
-label: 'LDbase - Reject Possible Account Match'
+label: 'LDbase - Reject. I did not contribute to this content'
 status: true
 langcode: en
 type: node
