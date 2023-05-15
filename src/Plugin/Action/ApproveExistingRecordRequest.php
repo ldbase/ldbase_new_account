@@ -34,10 +34,21 @@ class ApproveExistingRecordRequest extends ActionBase {
       }
     }
     // add $use_this_person
-    $field_related_persons[] = ["target_id" => $use_this_person];
+    $add_this_person = true;
+    foreach ($field_related_persons as $key => $val) {
+      // do not add if already there
+      if ($val['target_id'] == $use_this_person) {
+        $add_this_person = false;
+      }
+    }
+    if ($add_this_person) {
+      $field_related_persons[] = ["target_id" => $use_this_person];
+    }
+
     $reindexed_array = array_values($field_related_persons);
     // save changes
     $on_this_node->set('field_related_persons', $reindexed_array);
+
     $on_this_node->save();
 
     //check if $replace_this_person is still referenced
