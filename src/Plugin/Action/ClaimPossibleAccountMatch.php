@@ -10,7 +10,7 @@ use Drupal\Core\Session\AccountInterface;
  *
  * @Action(
  *   id = "claim_possible_account_match",
- *   label = @Translation("LDbase - Accept. Yes, I contributed to this data"),
+ *   label = @Translation("LDbase - Accept. Yes, I contributed to this content"),
  *   type = "node"
  * )
  */

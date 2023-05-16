@@ -83,7 +83,7 @@ class BatchService {
                 }
                 // check if the existing match is more than $update_horizon old
                 else {
-                  $update_horizon = strtotime('-14 days');  // two weeks ago
+                  $update_horizon = strtotime('-30 days');  // 30 days ago
                   foreach ($existing_match as $match_id) {
                     $match_node = $node_storage->load($match_id);
                     $match_node_updated = $match_node->changed->value;
