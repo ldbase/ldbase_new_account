@@ -1,58 +1,47 @@
 <?php
 
-namespace Drupal\ldbase_new_account\Commands;
+namespace Drupal\ldbase_new_account\Drush\Commands;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
-use Drupal\ldbase_new_account\Service\LDbaseNewAccountService;
+use Drush\Attributes as CLI;
 use Drush\Commands\DrushCommands;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * A Drush commandfile.
  */
-class LDbaseNewAccountCommands extends DrushCommands {
+final class LdbaseNewAccountCommands extends DrushCommands {
+
   /**
-   * Entity type service.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   * Constructs a LdbaseNewAccountCommands object.
    */
-  private $entityTypeManager;
-  /**
-   * Logger service.
-   *
-   * @var \Drupal\Core\Logger\LoggerChannelFactoryInterface
-   */
-  private $loggerChannelFactory;
-  /**
-   * LDbase New Account Helper service
-   *
-   * @var Drupal\ldbase_new_account\Service\LDbaseNewAccountService
-   */
-  /**
-   * Constructs a new LDbaseNewAccountCommands object.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
-   *   Entity type service.
-   * @param \Drupal\Core\Logger\LoggerChannelFactoryInterface $loggerChannelFactory
-   *   Logger service.
-   * @param \Drupal\ldbase_new_account\Service\LDbaseNewAccountService $newAccountService
-   *   New Account Service
-   */
-  public function __construct(EntityTypeManagerInterface $entityTypeManager, LoggerChannelFactoryInterface $loggerChannelFactory, LDbaseNewAccountService $newAccountService) {
-    $this->entityTypeManager = $entityTypeManager;
-    $this->loggerChannelFactory = $loggerChannelFactory;
-    $this->newAccountService = $newAccountService;
+  public function __construct(
+    private readonly EntityTypeManagerInterface $entityTypeManager,
+    private readonly LoggerChannelFactoryInterface $loggerFactory,
+  ) {
+    parent::__construct();
   }
 
   /**
-   * Get possible matches
-   *
-   * @command ldbase:possibleAccountMatches
-   * @aliases ldbase:pams
+   * {@inheritdoc}
    */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('entity_type.manager'),
+      $container->get('logger.factory'),
+    );
+  }
+
+  /**
+   * Command description here.
+   */
+  #[CLI\Command(name: 'ldbase_new_account:possibleAccountMatches', aliases: ['ldbase:pams'])]
+  #[CLI\Usage(name: 'ldbase:pams', description: 'Straightforward usage no options or arguments')]
   public function possibleAccountMatches() {
+    $this->logger()->info(dt('Finding Possible Person Matches ...'));
     // log process start
-    $this->loggerChannelFactory->get('ldbase')->info('Finding Possible Person Matches ...');
+    $this->loggerFactory->get('ldbase')->info('Finding Possible Person Matches ...');
 
     // get person nodes that are not connected to a drupal user
     $node_storage = $this->entityTypeManager->getStorage('node');
@@ -99,9 +88,9 @@ class LDbaseNewAccountCommands extends DrushCommands {
     drush_backend_batch_process();
 
     // Show some information.
-    $this->logger()->notice("Batch operations end.");
+    $this->logger()->notice("Person matching batch operations end.");
     // Log some information.
-    $this->loggerChannelFactory->get('ldbase')->info('Person matching batch operations finished.');
-
+    $this->loggerFactory->get('ldbase')->info('Person matching batch operations finished.');
   }
+
 }
