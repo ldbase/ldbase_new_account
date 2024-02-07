@@ -75,6 +75,7 @@ class BatchService {
                     'field_possible_match_person_id' => $nid,
                     'field_real_person_id' => $item_id,
                     'field_content_id' => $content_id,
+                    'field_user_match_status' => 'new',
                   ]);
                   $new_match->save();
 
@@ -87,9 +88,9 @@ class BatchService {
                   foreach ($existing_match as $match_id) {
                     $match_node = $node_storage->load($match_id);
                     $match_node_updated = $match_node->changed->value;
-                    $match_node_status = $match_node->get('status')->value;
+                    $match_node_status = $match_node->get('field_user_match_status')->value;
 
-                    if ($match_node_status == 1 && $update_horizon >= $match_node_updated) {
+                    if ($match_node_status == 'new' && $update_horizon >= $match_node_updated) {
                       $match_node->setChangedTime(\Drupal::time()->getRequestTime());
                       $match_node->save();
 
