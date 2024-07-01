@@ -34,6 +34,7 @@ class BatchService {
     $parse_mode = \Drupal::service('plugin.manager.search_api.parse_mode')->createInstance('direct');
     $parse_mode->setConjunction('OR');
     $query->setParseMode($parse_mode);
+    //$query->setProcessingLevel(0);
 
     // Set fulltext search keywords and fields
     $query->keys($person->getTitle());
