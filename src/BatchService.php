@@ -42,6 +42,7 @@ class BatchService {
     $results = $query->execute();
     // if there are results
     if (!empty($results)) {
+      $users_to_notify = [];
       $results_items = $results->getResultItems();
       foreach ($results_items as $item) {
         $rest = substr($item->getId(), 12);
@@ -80,8 +81,8 @@ class BatchService {
                   ]);
                   $new_match->save();
 
-                  // message user of possible match $user_id
-                  \Drupal::service('ldbase_handlers.message_service')->possibleMatchesNotification($user_id);
+                  $users_to_notify[$user_id] = $user_id;
+
                 }
                 // check if the existing match is more than $update_horizon old
                 else {
@@ -95,19 +96,22 @@ class BatchService {
                       $match_node->setChangedTime(\Drupal::time()->getRequestTime());
                       $match_node->save();
 
-                      // message user of possible match $user_id
-                      \Drupal::service('ldbase_handlers.message_service')
-                        ->possibleMatchesNotification($user_id);
+                      $users_to_notify[$user_id] = $user_id;
+
                     }
                   }
                 }
               }
             }
-          }
-        }
-      }
-    }
 
+          }
+
+        }
+
+      }
+
+    }
+    $context['results']['users_to_notify'] = $users_to_notify;
     $context['results'][] = $id;
     // Optional message displayed under the progressbar.
     $context['message'] = t('Running Batch "@id" @details',
@@ -125,12 +129,16 @@ class BatchService {
    * @param array $operations
    *  Array of operations
    */
-  public function collectMatchesFinished($success, array $results, array $operations) {
+  public static function collectMatchesFinished($success, array $results, array $operations) {
     $messenger = \Drupal::messenger();
     if ($success) {
       // Here we could do something meaningful with the results.
       // We just display the number of nodes we processed...
-      $messenger->addMessage(t('@count records checked.', ['@count' => count($results)]));
+      $messenger->addMessage(t('@count records checked.', ['@count' => count($results) - 1]));
+      $ldbase_message_service = \Drupal::service('ldbase_handlers.message_service');
+      foreach ($results['users_to_notify'] as $user_id) {
+        $ldbase_message_service->possibleMatchesNotification($user_id);
+      }
     }
     else {
       // An error occurred.

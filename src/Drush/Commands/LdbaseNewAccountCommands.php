@@ -2,6 +2,7 @@
 
 namespace Drupal\ldbase_new_account\Drush\Commands;
 
+use Drupal\Core\Batch\BatchBuilder;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
 use Drush\Attributes as CLI;
@@ -52,22 +53,20 @@ final class LdbaseNewAccountCommands extends DrushCommands {
       ->execute();
 
     // create operations array for the batch
-    $operations = [];
+    $batch = new BatchBuilder();
     $numOperations = 0;
     $batchId = 1;
     if (!empty($unconnected_person_ids)) {
       foreach($unconnected_person_ids as $person) {
         $this->output()->writeln("Preparing batch: " . $batchId);
-        $operations[] = [
-          '\Drupal\ldbase_new_account\BatchService::collectMatches',
-          [
+        $args = [
             $batchId,
             $person,
             t('Checking node @id', ['@id' => $person]),
-          ]
-        ];
+          ];
         $batchId++;
         $numOperations++;
+        $batch->addOperation('\Drupal\ldbase_new_account\BatchService::collectMatches', $args);
       }
     }
     else {
@@ -75,14 +74,14 @@ final class LdbaseNewAccountCommands extends DrushCommands {
     }
 
     // create batch
-    $batch = [
-      'title' => t('Checking @num node(s) for matches', ['@num' => $numOperations]),
-      'operations' => $operations,
-      'finished' => '\Drupal\ldbase_new_account\BatchService::collectMatchesFinished',
-    ];
+    $batch->setTitle(t('Checking @num node(s) for matches', ['@num' => $numOperations]))
+      ->setFinishCallback('\Drupal\ldbase_new_account\BatchService::collectMatchesFinished')
+      ->setInitMessage('Commencing')
+      ->setProgressMessage('Processing ...')
+      ->setErrorMessage('An error occurred during processing.');
 
     // add batch operations as new batch sets
-    batch_set($batch);
+    batch_set($batch->toArray());
 
     // process batch sets
     drush_backend_batch_process();
