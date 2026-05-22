@@ -31,7 +31,7 @@ class BatchService {
     $query = $index->query();
 
     // Change the parse mode for the search.
-    $parse_mode = \Drupal::service('plugin.manager.search_api.parse_mode')->createInstance('direct');
+    $parse_mode = \Drupal::service('plugin.manager.search_api.parse_mode')->createInstance('terms');
     $parse_mode->setConjunction('OR');
     $query->setParseMode($parse_mode);
     //$query->setProcessingLevel(0);
