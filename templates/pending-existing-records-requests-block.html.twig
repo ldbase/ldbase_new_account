@@ -1,0 +1,21 @@
+{#
+/**
+ * @file
+ * Template for rendering custom markup and a link list.
+ *
+ * Available variables:
+ * - intro_text: A string or render array for the section introduction.
+ * - link_list: A render array containing the item list of links.
+ */
+#}
+
+<div class="user-project-list-waiting-requests-alert">
+  <div class="intro-content">
+    <p class="intro-markup">{{ intro_text }}</p>
+  </div>
+
+  <div class="item_list_match_requests">
+    {{ link_list }}
+  </div>
+</div>
+

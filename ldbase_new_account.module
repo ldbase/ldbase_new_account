@@ -15,3 +15,18 @@ function ldbase_new_account_link_alter(&$variables) {
     $variables['text'] = t('My Dashboard');
   }
 }
+
+/**
+ * Implements hook_theme().
+ */
+function ldbase_new_account_theme($existing, $type, $theme, $path) {
+  return [
+    'pending_existing_records_requests_block' => [
+      'template' => 'pending-existing-records-requests-block',
+      'variables' => [
+        'intro_text' => NULL,
+        'link_list' => [],
+      ],
+    ],
+  ];
+}
