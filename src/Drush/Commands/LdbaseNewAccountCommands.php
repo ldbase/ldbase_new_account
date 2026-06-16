@@ -44,12 +44,11 @@ final class LdbaseNewAccountCommands extends DrushCommands {
     // log process start
     $this->loggerFactory->get('ldbase')->info('Finding Possible Person Matches ...');
 
-    // get person nodes that are not connected to a drupal user
+    // get all person nodes
     $node_storage = $this->entityTypeManager->getStorage('node');
     $unconnected_person_ids = $node_storage->getQuery()
       ->accessCheck(TRUE)
       ->condition('type','person')
-      ->notExists('field_drupal_account_id')
       ->execute();
 
     // create operations array for the batch
