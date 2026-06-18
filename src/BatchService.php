@@ -35,14 +35,14 @@ class BatchService {
 
     $person = $node_storage->load($nid);
     $person_drupal_id = $person->get('field_drupal_account_id')->target_id;
-    $users_to_notify = [];
+
     // if this is a person stub
     if (empty($person_drupal_id)) {
       $query->keys($person->getTitle());
       $results = $query->execute();
       // if there are results
       if (!empty($results)) {
-
+        $users_to_notify = [];
         $results_items = $results->getResultItems();
         foreach ($results_items as $item) {
           $rest = substr($item->getId(), 12);
@@ -53,7 +53,7 @@ class BatchService {
 
           // make sure this result is not just the original node used to search
           if ($item_id != $nid) {
-            // make sure this person has a user attached
+            // make sure this result person has a user attached
             $check_user = $node_storage->load($item_id);
             $user_id = $check_user->hasField('field_drupal_account_id') ? $check_user->get('field_drupal_account_id')->target_id : null;
             if (!empty($user_id)) {
@@ -81,8 +81,9 @@ class BatchService {
                       'field_user_match_status' => 'new',
                     ]);
                     $new_match->save();
-
-                    $users_to_notify[$user_id] = $user_id;
+                    if (!empty($user_id)) {
+                      $context['results']['users_to_notify'][$user_id] = $user_id;
+                    }
 
                   }
                   // check if the existing match is more than $update_horizon old
@@ -97,7 +98,9 @@ class BatchService {
                         $match_node->setChangedTime(\Drupal::time()->getRequestTime());
                         $match_node->save();
 
-                        $users_to_notify[$user_id] = $user_id;
+                        if (!empty($user_id)) {
+                          $context['results']['users_to_notify'][$user_id] = $user_id;
+                        }
 
                       }
                     }
@@ -111,11 +114,12 @@ class BatchService {
     }
     // otherwise this is a person record
     else {
-      // search just person records for matches
+
       $query->keys($person->getTitle());
       $results = $query->execute();
 
       if (!empty($results)) {
+        $users_to_notify = [];
         $results_items = $results->getResultItems();
         foreach ($results_items as $item) {
           $rest = substr($item->getId(), 12);
@@ -125,64 +129,66 @@ class BatchService {
           }
             // make sure this result is not just the original node used to search
             if ($item_id != $nid) {
-            // make sure this person DOES NOT have a user attached
+            // make sure this result person DOES NOT have a user attached
             $check_user = $node_storage->load($item_id);
             $user_id = $check_user->hasField('field_drupal_account_id') ? $check_user->get('field_drupal_account_id')->target_id : null;
             if (empty($user_id)) {
                 // get any referenced content
                 $content = $helper_service->retrieveContentByPersonId($item_id);
-                if (!empty($content)) {
-                    foreach ($content as $content_id) {
-                        $existing_match = $node_storage->getQuery()
-                            ->accessCheck(TRUE)
-                            ->condition('type', 'possible_user_match')
-                            ->condition('field_possible_match_person_id', $item_id)
-                            ->condition('field_real_person_id', $nid)
-                            ->condition('field_content_id', $content_id)
-                            ->execute();
-                        if (empty($existing_match)) {
-                            // add possible match node
-                            $new_match = $node_storage->create([
-                                'type' => 'possible_user_match',
-                                'status' => 1,
-                                'title' => $person->getTitle() . ' possible match',
-                                'field_possible_match_person_id' => $item_id,
-                                'field_real_person_id' => $nid,
-                                'field_content_id' => $content_id,
-                                'field_user_match_status' => 'new',
-                            ]);
-                            $new_match->save();
-                            $real_user_id = $person->get('field_drupal_account_id')->target_id;
-                            $users_to_notify[$user_id] = $real_user_id;
-
-                        }
-                        // check if the existing match is more than $update_horizon old
-                        else {
-                            $update_horizon = strtotime('-30 days');  // 30 days ago
-                            foreach ($existing_match as $match_id) {
-                                $match_node = $node_storage->load($match_id);
-                                $match_node_updated = $match_node->changed->value;
-                                $match_node_status = $match_node->get('field_user_match_status')->value;
-
-                                if ($match_node_status == 'new' && $update_horizon >= $match_node_updated) {
-                                    $match_node->setChangedTime(\Drupal::time()->getRequestTime());
-                                    $match_node->save();
-
-                                    $users_to_notify[$user_id] = $real_user_id;
-
-                                }
-                            }
-                        }
+              if (!empty($content)) {
+                foreach ($content as $content_id) {
+                  $existing_match = $node_storage->getQuery()
+                      ->accessCheck(TRUE)
+                      ->condition('type', 'possible_user_match')
+                      ->condition('field_possible_match_person_id', $item_id)
+                      ->condition('field_real_person_id', $nid)
+                      ->condition('field_content_id', $content_id)
+                      ->execute();
+                  if (empty($existing_match)) {
+                    // add possible match node
+                    $new_match = $node_storage->create([
+                        'type' => 'possible_user_match',
+                        'status' => 1,
+                        'title' => $person->getTitle() . ' possible match',
+                        'field_possible_match_person_id' => $item_id,
+                        'field_real_person_id' => $nid,
+                        'field_content_id' => $content_id,
+                        'field_user_match_status' => 'new',
+                    ]);
+                    $new_match->save();
+                    if (!empty($person_drupal_id)) {
+                      $context['results']['users_to_notify'][$person_drupal_id] = $person_drupal_id;
                     }
+                  }
+                  // check if the existing match is more than $update_horizon old
+                  else {
+                      $update_horizon = strtotime('-30 days');  // 30 days ago
+                      foreach ($existing_match as $match_id) {
+                          $match_node = $node_storage->load($match_id);
+                          $match_node_updated = $match_node->changed->value;
+                          $match_node_status = $match_node->get('field_user_match_status')->value;
+
+                          if ($match_node_status == 'new' && $update_horizon >= $match_node_updated) {
+                              $match_node->setChangedTime(\Drupal::time()->getRequestTime());
+                              $match_node->save();
+
+                            if (!empty($person_drupal_id)) {
+                              $context['results']['users_to_notify'][$person_drupal_id] = $person_drupal_id;
+                            }
+
+                          }
+                      }
+                  }
                 }
+              }
             }
           }
         }
-
       }
-
     }
-    $context['results']['users_to_notify'] = $users_to_notify;
+    /*if (!empty($users_to_notify)) {
+        $context['results']['users_to_notify'] = $users_to_notify;
+    }*/
     $context['results'][] = $id;
     // Optional message displayed under the progressbar.
     $context['message'] = t('Running Batch "@id" @details',
