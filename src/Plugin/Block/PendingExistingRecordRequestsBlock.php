@@ -69,14 +69,20 @@ class PendingExistingRecordRequestsBlock extends BlockBase implements ContainerF
               $nids[] = $node->id();
             }
           }
-          // are there any existing records requests attached to any of the group's nodes?
-          $query = $this->entityTypeManager->getStorage('node')->getQuery()
-            ->condition('type', 'existing_record_request')
-            ->condition('field_request_status', 'New')
-            ->condition('field_requested_node_link', $nids, 'IN')
-            ->accessCheck(FALSE);
+          if (!empty($nids)) {
+            // are there any existing records requests attached to any of the group's nodes?
+            $query = $this->entityTypeManager->getStorage('node')->getQuery()
+              ->condition('type', 'existing_record_request')
+              ->condition('field_request_status', 'New')
+              ->condition('field_requested_node_link', $nids, 'IN')
+              ->accessCheck(FALSE);
 
-          $waiting_requests = $query->execute();
+            $waiting_requests = $query->execute();
+          }
+          else {
+            $waiting_requests = NULL;
+          }
+
           if (!empty($waiting_requests)) {
             // if there are requests for this group
             $group_id = $managed_group->id();
