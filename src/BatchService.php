@@ -213,8 +213,10 @@ class BatchService {
       // We just display the number of nodes we processed...
       $messenger->addMessage(t('@count records checked.', ['@count' => count($results) - 1]));
       $ldbase_message_service = \Drupal::service('ldbase_handlers.message_service');
-      foreach ($results['users_to_notify'] as $user_id) {
-        $ldbase_message_service->possibleMatchesNotification($user_id);
+      if (array_key_exists('users_to_notify',$results)) {
+        foreach ($results['users_to_notify'] as $user_id) {
+          $ldbase_message_service->possibleMatchesNotification($user_id);
+        }
       }
     }
     else {
